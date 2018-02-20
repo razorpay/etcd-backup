@@ -1,0 +1,49 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: etcd-backup
+  namespace: kube-system
+  labels:
+    application: etcd-backup
+spec:
+  schedule: "23 * * * *"
+  concurrencyPolicy: Forbid
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            application: etcd-backup
+        spec:
+          restartPolicy: Never
+          containers:
+          - name: etcd-backup
+            image: razorpay/etcd-backup
+            command: ["/bin/bash", "/backup.sh"]
+            envFrom:
+            - configMapRef:
+                name: etcd-backup
+            resources:
+              limits:
+                cpu: 100m
+                memory: 512Mi
+              requests:
+                cpu: 50m
+                memory: 256Mi
+            volumeMounts:
+            - mountPath: /etc/kubernetes/secrets
+              name: secrets
+              readOnly: true
+          volumes:
+          - name: secrets
+            secret:
+              secretName: kube-apiserver
+          nodeSelector:
+            node-role.kubernetes.io/master: ""
+          tolerations:
+            - key: CriticalAddonsOnly
+              operator: Exists
+            - key: node-role.kubernetes.io/master
+              operator: Exists
+              effect: NoSchedule

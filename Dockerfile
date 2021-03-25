@@ -1,4 +1,4 @@
-FROM alpine:3.11.3
+FROM alpine:3.13.3
 
 ENV ETCD_BACKUP_DIR=/backups
 ENV ETCDCLI_URL=https://storage.googleapis.com/etcd/v3.2.13/etcd-v3.2.13-linux-amd64.tar.gz
